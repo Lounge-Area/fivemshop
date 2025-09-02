@@ -3,7 +3,7 @@
  * Handles sending data from the web interface to the FiveM client
  */
 
-export interface NUIMessage {
+interface NUIMessage {
   action: string;
   data?: any;
 }
@@ -32,7 +32,7 @@ export const sendNUIMessage = async (message: NUIMessage): Promise<void> => {
  * Gets the parent resource name for NUI callbacks
  * @returns The resource name or fallback for development
  */
-export const GetParentResourceName = (): string => {
+const GetParentResourceName = (): string => {
   try {
     // @ts-ignore - FiveM global function
     return window.GetParentResourceName?.() || 'fivem-product-catalog';
@@ -44,7 +44,7 @@ export const GetParentResourceName = (): string => {
 /**
  * Closes the NUI interface
  */
-export const closeNUI = async (): Promise<void> => {
+const closeNUI = async (): Promise<void> => {
   await sendNUIMessage({
     action: 'closeNUI'
   });
@@ -71,7 +71,7 @@ export const notifyProductAdded = async (product: any, quantity: number = 1): Pr
  * @param cartItems - Array of cart items with quantities
  * @param total - Total price of the cart
  */
-export const processCheckout = async (cartItems: any[], total: number): Promise<void> => {
+const processCheckout = async (cartItems: any[], total: number): Promise<void> => {
   await sendNUIMessage({
     action: 'processCheckout',
     data: {

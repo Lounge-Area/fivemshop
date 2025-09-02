@@ -18,7 +18,7 @@ export interface Category {
   icon: string;
 }
 
-export interface Subcategory {
+interface Subcategory {
   id: string;
   name: string;
   count: number;
