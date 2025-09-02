@@ -6,7 +6,7 @@ interface CartItem {
   name: string;
   price: number;
   quantity: number;
-  image: string;
+  image_url: string;
 }
 
 interface CartProps {
@@ -50,7 +50,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem }:
                 {items.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4">
                     <img
-                      src={item.image}
+                      src={item.image_url}
                       alt={item.name}
                       className="h-16 w-16 rounded-md object-cover"
                     />
