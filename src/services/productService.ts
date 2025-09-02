@@ -1,17 +1,23 @@
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseAvailable } from '../lib/supabase';
 import { Product, Category, Subcategory, CategoryWithSubcategories, SubcategoryWithCount } from '../types/product';
+import { products as staticProducts, categories as staticCategories } from '../data/products';
 
 /**
- * Service for managing products, categories, and subcategories
+ * Service for managing products, categories, and subcategories with fallback to static data
  */
 export class ProductService {
   /**
    * Fetch all categories with their subcategories and product counts
    */
   static async getCategories(): Promise<CategoryWithSubcategories[]> {
+    // Use static data if Supabase is not available
+    if (!isSupabaseAvailable()) {
+      return staticCategories;
+    }
+
     try {
       // Fetch categories
-      const { data: categories, error: categoriesError } = await supabase
+      const { data: categories, error: categoriesError } = await supabase!
         .from('categories')
         .select('*')
         .order('name');
@@ -19,7 +25,7 @@ export class ProductService {
       if (categoriesError) throw categoriesError;
 
       // Fetch subcategories with product counts
-      const { data: subcategoriesData, error: subcategoriesError } = await supabase
+      const { data: subcategoriesData, error: subcategoriesError } = await supabase!
         .from('subcategories')
         .select(`
           *,
@@ -50,7 +56,8 @@ export class ProductService {
       return categoriesWithSubcategories;
     } catch (error) {
       console.error('Error fetching categories:', error);
-      throw error;
+      // Fallback to static data on error
+      return staticCategories;
     }
   }
 
@@ -63,8 +70,33 @@ export class ProductService {
     searchTerm?: string;
     inStockOnly?: boolean;
   }): Promise<Product[]> {
+    // Use static data if Supabase is not available
+    if (!isSupabaseAvailable()) {
+      let filteredProducts = [...staticProducts];
+
+      // Apply filters to static data
+      if (filters?.categoryId) {
+        filteredProducts = filteredProducts.filter(p => p.category_id === filters.categoryId);
+      }
+      if (filters?.subcategoryId) {
+        filteredProducts = filteredProducts.filter(p => p.subcategory_id === filters.subcategoryId);
+      }
+      if (filters?.inStockOnly) {
+        filteredProducts = filteredProducts.filter(p => p.in_stock);
+      }
+      if (filters?.searchTerm) {
+        const searchLower = filters.searchTerm.toLowerCase();
+        filteredProducts = filteredProducts.filter(p => 
+          p.name.toLowerCase().includes(searchLower) || 
+          p.description.toLowerCase().includes(searchLower)
+        );
+      }
+
+      return filteredProducts;
+    }
+
     try {
-      let query = supabase
+      let query = supabase!
         .from('products')
         .select('*')
         .order('name');
@@ -93,7 +125,8 @@ export class ProductService {
       return products || [];
     } catch (error) {
       console.error('Error fetching products:', error);
-      throw error;
+      // Fallback to static data on error
+      return staticProducts;
     }
   }
 
@@ -101,8 +134,13 @@ export class ProductService {
    * Get a single product by ID
    */
   static async getProduct(id: string): Promise<Product | null> {
+    // Use static data if Supabase is not available
+    if (!isSupabaseAvailable()) {
+      return staticProducts.find(p => p.id === id) || null;
+    }
+
     try {
-      const { data: product, error } = await supabase
+      const { data: product, error } = await supabase!
         .from('products')
         .select('*')
         .eq('id', id)
@@ -113,7 +151,8 @@ export class ProductService {
       return product;
     } catch (error) {
       console.error('Error fetching product:', error);
-      throw error;
+      // Fallback to static data on error
+      return staticProducts.find(p => p.id === id) || null;
     }
   }
 
@@ -121,8 +160,12 @@ export class ProductService {
    * Create a new product (admin function)
    */
   static async createProduct(product: Omit<Product, 'id' | 'created_at' | 'updated_at'>): Promise<Product> {
+    if (!isSupabaseAvailable()) {
+      throw new Error('Supabase is required for creating products');
+    }
+
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabase!
         .from('products')
         .insert([product])
         .select()
@@ -141,8 +184,12 @@ export class ProductService {
    * Update a product (admin function)
    */
   static async updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
+    if (!isSupabaseAvailable()) {
+      throw new Error('Supabase is required for updating products');
+    }
+
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabase!
         .from('products')
         .update(updates)
         .eq('id', id)
@@ -162,8 +209,12 @@ export class ProductService {
    * Delete a product (admin function)
    */
   static async deleteProduct(id: string): Promise<void> {
+    if (!isSupabaseAvailable()) {
+      throw new Error('Supabase is required for deleting products');
+    }
+
     try {
-      const { error } = await supabase
+      const { error } = await supabase!
         .from('products')
         .delete()
         .eq('id', id);
@@ -179,9 +230,16 @@ export class ProductService {
    * Get products by category name (for backward compatibility)
    */
   static async getProductsByCategory(categoryName: string): Promise<Product[]> {
+    // Use static data if Supabase is not available
+    if (!isSupabaseAvailable()) {
+      const category = staticCategories.find(c => c.name === categoryName);
+      if (!category) return [];
+      return staticProducts.filter(p => p.category_id === category.id);
+    }
+
     try {
       // First get the category ID
-      const { data: category, error: categoryError } = await supabase
+      const { data: category, error: categoryError } = await supabase!
         .from('categories')
         .select('id')
         .eq('name', categoryName)
@@ -193,7 +251,10 @@ export class ProductService {
       return this.getProducts({ categoryId: category.id });
     } catch (error) {
       console.error('Error fetching products by category:', error);
-      throw error;
+      // Fallback to static data on error
+      const category = staticCategories.find(c => c.name === categoryName);
+      if (!category) return [];
+      return staticProducts.filter(p => p.category_id === category.id);
     }
   }
 }

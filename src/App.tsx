@@ -13,7 +13,7 @@ function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   
   // Load products and categories from Supabase
-  const { products, categories, loading, error } = useProducts();
+  const { products, categories, loading, error, usingStaticData } = useProducts();
   
   const {
     cartItems,
@@ -86,7 +86,9 @@ function App() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading FiveM Store...</p>
+          <p className="text-gray-600">
+            Loading FiveM Store{usingStaticData ? ' (Demo Mode)' : ''}...
+          </p>
         </div>
       </div>
     );
@@ -104,7 +106,9 @@ function App() {
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Connection Error</h2>
           <p className="text-gray-600 mb-4">{error}</p>
-          <p className="text-sm text-gray-500">Please make sure Supabase is properly configured.</p>
+          <p className="text-sm text-gray-500">
+            Please make sure Supabase is properly configured or the app will use demo data.
+          </p>
         </div>
       </div>
     );
@@ -112,6 +116,18 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Demo Mode Banner */}
+      {usingStaticData && (
+        <div className="bg-yellow-50 border-b border-yellow-200 px-4 py-2">
+          <div className="max-w-7xl mx-auto">
+            <p className="text-sm text-yellow-800">
+              <span className="font-medium">Demo Mode:</span> Using static data. 
+              Connect to Supabase for full functionality.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <Header
         cartCount={getTotalItems()}
