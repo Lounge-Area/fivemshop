@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search, ShoppingCart, Store } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useShop } from '../context/ShopContext';
 
 interface HeaderProps {
   cartCount: number;
@@ -11,10 +12,19 @@ interface HeaderProps {
 
 export function Header({ cartCount, searchTerm, onSearchChange, onCartClick }: HeaderProps) {
   const { isAuthenticated } = useAuth();
+  const { userShops } = useShop();
 
   const handleAdminClick = () => {
     window.history.pushState({}, '', '/admin');
     window.location.reload();
+  };
+
+  const handleShopsClick = () => {
+    window.location.href = '/shops';
+  };
+
+  const handleMyShopsClick = () => {
+    window.location.href = '/shopadmin';
   };
 
   return (
@@ -46,12 +56,28 @@ export function Header({ cartCount, searchTerm, onSearchChange, onCartClick }: H
           {/* Cart Button */}
           <div className="flex items-center space-x-4">
             {isAuthenticated && (
-              <button
-                onClick={handleAdminClick}
-                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
-              >
-                Admin
-              </button>
+              <div className="flex items-center space-x-4">
+                <button
+                  onClick={handleShopsClick}
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                >
+                  Shops
+                </button>
+                {userShops.length > 0 && (
+                  <button
+                    onClick={handleMyShopsClick}
+                    className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                  >
+                    My Shops
+                  </button>
+                )}
+                <button
+                  onClick={handleAdminClick}
+                  className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                >
+                  Admin
+                </button>
+              </div>
             )}
             <button
               onClick={onCartClick}

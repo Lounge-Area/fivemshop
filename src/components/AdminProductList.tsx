@@ -5,9 +5,10 @@ import { Edit, Trash2, Package, AlertCircle } from 'lucide-react';
 
 interface AdminProductListProps {
   onEditProduct: (product: Product) => void;
+  shopId?: string;
 }
 
-export const AdminProductList: React.FC<AdminProductListProps> = ({ onEditProduct }) => {
+export const AdminProductList: React.FC<AdminProductListProps> = ({ onEditProduct, shopId }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +22,7 @@ export const AdminProductList: React.FC<AdminProductListProps> = ({ onEditProduc
     try {
       setLoading(true);
       setError(null);
-      const productsData = await ProductService.getProducts();
+      const productsData = await ProductService.getProducts(shopId ? { shopId } : undefined);
       setProducts(productsData);
     } catch (err) {
       console.error('Error loading products:', err);

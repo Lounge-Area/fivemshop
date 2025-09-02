@@ -1,5 +1,5 @@
 import { supabase, isSupabaseAvailable } from '../lib/supabase';
-import { Product, Category, Subcategory, CategoryWithSubcategories, SubcategoryWithCount } from '../types/product';
+import { Product, Category, Subcategory, CategoryWithSubcategories, SubcategoryWithCount, Shop } from '../types/product';
 import { products as staticProducts, categories as staticCategories } from '../data/products';
 
 /**
@@ -62,11 +62,74 @@ export class ProductService {
   }
 
   /**
+   * Fetch all shops
+   */
+  static async getShops(): Promise<Shop[]> {
+    // Use static data if Supabase is not available
+    if (!isSupabaseAvailable()) {
+      return [
+        {
+          id: '770e8400-e29b-41d4-a716-446655440001',
+          name: 'Los Santos General Store',
+          description: 'Your one-stop shop for all essentials in Los Santos',
+          location: 'Downtown Los Santos',
+          opening_hours: '24/7',
+          owner_id: null,
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
+    }
+
+    try {
+      const { data: shops, error } = await supabase!
+        .from('shops')
+        .select('*')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+
+      return shops || [];
+    } catch (error) {
+      console.error('Error fetching shops:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get shops owned by a specific user
+   */
+  static async getShopsByOwner(ownerId: string): Promise<Shop[]> {
+    if (!isSupabaseAvailable()) {
+      return [];
+    }
+
+    try {
+      const { data: shops, error } = await supabase!
+        .from('shops')
+        .select('*')
+        .eq('owner_id', ownerId)
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) throw error;
+
+      return shops || [];
+    } catch (error) {
+      console.error('Error fetching user shops:', error);
+      return [];
+    }
+  }
+
+  /**
    * Fetch all products with optional filtering
    */
   static async getProducts(filters?: {
     categoryId?: string;
     subcategoryId?: string;
+    shopId?: string;
     searchTerm?: string;
     inStockOnly?: boolean;
   }): Promise<Product[]> {
@@ -80,6 +143,9 @@ export class ProductService {
       }
       if (filters?.subcategoryId) {
         filteredProducts = filteredProducts.filter(p => p.subcategory_id === filters.subcategoryId);
+      }
+      if (filters?.shopId) {
+        filteredProducts = filteredProducts.filter(p => p.shop_id === filters.shopId);
       }
       if (filters?.inStockOnly) {
         filteredProducts = filteredProducts.filter(p => p.in_stock);
@@ -108,6 +174,10 @@ export class ProductService {
 
       if (filters?.subcategoryId) {
         query = query.eq('subcategory_id', filters.subcategoryId);
+      }
+
+      if (filters?.shopId) {
+        query = query.eq('shop_id', filters.shopId);
       }
 
       if (filters?.inStockOnly) {
@@ -222,6 +292,76 @@ export class ProductService {
       if (error) throw error;
     } catch (error) {
       console.error('Error deleting product:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new shop (master admin function)
+   */
+  static async createShop(shop: Omit<Shop, 'id' | 'created_at' | 'updated_at'>): Promise<Shop> {
+    if (!isSupabaseAvailable()) {
+      throw new Error('Supabase is required for creating shops');
+    }
+
+    try {
+      const { data, error } = await supabase!
+        .from('shops')
+        .insert([shop])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return data;
+    } catch (error) {
+      console.error('Error creating shop:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a shop (master admin function)
+   */
+  static async updateShop(id: string, updates: Partial<Shop>): Promise<Shop> {
+    if (!isSupabaseAvailable()) {
+      throw new Error('Supabase is required for updating shops');
+    }
+
+    try {
+      const { data, error } = await supabase!
+        .from('shops')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return data;
+    } catch (error) {
+      console.error('Error updating shop:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a shop (master admin function)
+   */
+  static async deleteShop(id: string): Promise<void> {
+    if (!isSupabaseAvailable()) {
+      throw new Error('Supabase is required for deleting shops');
+    }
+
+    try {
+      const { error } = await supabase!
+        .from('shops')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error deleting shop:', error);
       throw error;
     }
   }

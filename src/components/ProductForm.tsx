@@ -6,11 +6,12 @@ import { Save, X } from 'lucide-react';
 
 interface ProductFormProps {
   product?: Product | null;
+  shopId?: string;
   onSave: () => void;
   onCancel: () => void;
 }
 
-export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCancel }) => {
+export const ProductForm: React.FC<ProductFormProps> = ({ product, shopId, onSave, onCancel }) => {
   const { categories } = useProducts();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,6 +58,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({ product, onSave, onCan
         price: parseFloat(formData.price),
         category_id: formData.category_id,
         subcategory_id: formData.subcategory_id || null,
+        shop_id: shopId || null,
         description: formData.description,
         image_url: formData.image_url,
         in_stock: formData.in_stock,

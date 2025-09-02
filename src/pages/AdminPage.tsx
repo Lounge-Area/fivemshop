@@ -1,32 +1,17 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { AdminProductList } from '../components/AdminProductList';
-import { ProductForm } from '../components/ProductForm';
-import { Product } from '../types/product';
+import { ShopManagement } from '../components/ShopManagement';
 import { LogOut, Plus, ArrowLeft } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {
   const { user, signOut, isAuthenticated, loading } = useAuth();
-  const [showProductForm, setShowProductForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   const handleBackToStore = () => {
     window.location.href = '/';
   };
 
-  const handleAddProduct = () => {
-    setEditingProduct(null);
-    setShowProductForm(true);
-  };
-
-  const handleEditProduct = (product: Product) => {
-    setEditingProduct(product);
-    setShowProductForm(true);
-  };
-
-  const handleCloseForm = () => {
-    setShowProductForm(false);
-    setEditingProduct(null);
+  const handleBackToShops = () => {
+    window.location.href = '/shops';
   };
 
   if (loading) {
@@ -44,6 +29,43 @@ export const AdminPage: React.FC = () => {
     return <AdminLogin />;
   }
 
+  // Check if user is master admin
+  const isMasterAdmin = user?.email === 'admin@admin.com';
+  
+  if (!isMasterAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="max-w-md w-full text-center">
+          <div className="bg-white rounded-lg shadow-md p-8">
+            <div className="text-red-600 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h2>
+            <p className="text-gray-600 mb-6">
+              You don't have permission to access the master admin panel. This area is restricted to master administrators only.
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={handleBackToShops}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Go to Shop Admin
+              </button>
+              <button
+                onClick={handleBackToStore}
+                className="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Back to Store
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Admin Header */}
@@ -59,7 +81,7 @@ export const AdminPage: React.FC = () => {
                 <span>Back to Store</span>
               </button>
               <div className="h-6 w-px bg-gray-300"></div>
-              <h1 className="text-xl font-bold text-gray-900">Admin Panel</h1>
+              <h1 className="text-xl font-bold text-gray-900">Master Admin Panel</h1>
             </div>
 
             <div className="flex items-center space-x-4">
@@ -80,38 +102,7 @@ export const AdminPage: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {showProductForm ? (
-          <div>
-            <div className="mb-6">
-              <button
-                onClick={handleCloseForm}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>Back to Products</span>
-              </button>
-            </div>
-            <ProductForm
-              product={editingProduct}
-              onSave={handleCloseForm}
-              onCancel={handleCloseForm}
-            />
-          </div>
-        ) : (
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Product Management</h2>
-              <button
-                onClick={handleAddProduct}
-                className="flex items-center space-x-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add Product</span>
-              </button>
-            </div>
-            <AdminProductList onEditProduct={handleEditProduct} />
-          </div>
-        )}
+        <ShopManagement />
       </main>
     </div>
   );
@@ -162,8 +153,11 @@ const AdminLogin: React.FC = () => {
             <span>Back to Store</span>
           </button>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isSignUp ? 'Create admin account' : 'Sign in to admin panel'}
+            {isSignUp ? 'Create master admin account' : 'Master Admin Login'}
           </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Access the master administration panel
+          </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
