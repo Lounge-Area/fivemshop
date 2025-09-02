@@ -20,19 +20,11 @@ export const sendNUIMessage = async (message: NUIMessage): Promise<void> => {
       // Use FiveM's native invoke method
       window.invokeNative('sendNuiMessage', JSON.stringify(message));
     } else {
-      // Fallback for development/testing - use fetch to simulate NUI callback
-      await fetch(`https://${GetParentResourceName()}/nuiCallback`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(message),
-      });
+      // Development environment - log the message instead of attempting fetch
+      console.warn('NUI Message (Development Environment):', message);
     }
   } catch (error) {
     console.error('Failed to send NUI message:', error);
-    // In development, we'll just log the message
-    console.log('NUI Message (Development):', message);
   }
 };
 
