@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, ShoppingCart, Package } from 'lucide-react';
+import { ShoppingCart, Package } from 'lucide-react';
 import { Product } from '../types/product';
 
 interface ProductCardProps {
@@ -8,19 +8,6 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
-  const renderStars = (rating: number) => {
-    return Array.from({ length: 5 }, (_, index) => (
-      <Star
-        key={index}
-        className={`w-4 h-4 ${
-          index < Math.floor(rating)
-            ? 'text-yellow-400 fill-current'
-            : 'text-gray-300'
-        }`}
-      />
-    ));
-  };
-
   const handleAddToCart = async () => {
     try {
       await onAddToCart(product);
@@ -35,26 +22,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
       {/* Product Image */}
       <div className="relative overflow-hidden">
         <img
-          src={product.image}
+          src={product.image_url || 'https://images.pexels.com/photos/162553/keys-workshop-mechanic-tools-162553.jpeg'}
           alt={product.name}
           className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
         />
-        {!product.inStock && (
+        {!product.in_stock && (
           <div className="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
             <span className="text-white font-semibold bg-red-600 px-3 py-1 rounded-full text-sm">
               Out of Stock
             </span>
           </div>
         )}
-        <div className="absolute top-2 right-2 bg-white rounded-full px-2 py-1 shadow-md">
-          <div className="flex items-center space-x-1">
-            {renderStars(product.rating)}
-            <span className="text-sm font-medium text-gray-700 ml-1">
-              {product.rating}
+        {product.stock_quantity > 0 && (
+          <div className="absolute top-2 right-2 bg-white rounded-full px-2 py-1 shadow-md">
+            <span className="text-sm font-medium text-gray-700">
+              Stock: {product.stock_quantity}
             </span>
           </div>
+        )}
         </div>
-      </div>
 
       {/* Product Info */}
       <div className="p-4">
@@ -87,14 +73,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }
           
           <button
             onClick={handleAddToCart}
-            disabled={!product.inStock}
+            disabled={!product.in_stock}
             className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center space-x-2 ${
-              product.inStock
+              product.in_stock
                 ? 'bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
-            {product.inStock ? (
+            {product.in_stock ? (
               <>
                 <ShoppingCart className="w-4 h-4" />
                 <span>Add to Cart</span>

@@ -1,9 +1,9 @@
 import React from 'react';
-import { Wrench, Apple, Smartphone, Grid3x3 } from 'lucide-react';
-import { Category } from '../types/product';
+import { Wrench, Apple, Smartphone, Grid3x3, Zap, Target, Settings, Bomb, Car, Shirt, Heart, Tool, Flask, Home, FileText } from 'lucide-react';
+import { CategoryWithSubcategories } from '../types/product';
 
 interface CategoryFilterProps {
-  categories: Category[];
+  categories: CategoryWithSubcategories[];
   selectedCategory: string | null;
   selectedSubcategory: string | null;
   onCategorySelect: (categoryId: string | null) => void;
@@ -12,9 +12,21 @@ interface CategoryFilterProps {
 
 const getCategoryIcon = (iconName: string) => {
   const icons = {
+    zap: Zap,
+    target: Target,
+    settings: Settings,
+    bomb: Bomb,
+    car: Car,
+    shirt: Shirt,
+    heart: Heart,
+    tool: Tool,
+    flask: Flask,
+    home: Home,
+    'file-text': FileText,
     wrench: Wrench,
     apple: Apple,
-    smartphone: Smartphone
+    smartphone: Smartphone,
+    grid3x3: Grid3x3
   };
   const IconComponent = icons[iconName as keyof typeof icons] || Grid3x3;
   return <IconComponent className="w-5 h-5" />;
@@ -67,12 +79,12 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                 <span className="font-medium">{category.name}</span>
               </div>
               <span className="text-sm text-gray-500">
-                {category.subcategories.reduce((acc, sub) => acc + sub.count, 0)}
+                {category.subcategories?.reduce((acc, sub) => acc + (sub.count || 0), 0) || 0}
               </span>
             </button>
 
             {/* Subcategories */}
-            {selectedCategory === category.id && (
+            {selectedCategory === category.id && category.subcategories && (
               <div className="ml-6 mt-2 space-y-1">
                 {category.subcategories.map((subcategory) => (
                   <button
@@ -85,7 +97,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
                     }`}
                   >
                     <span>{subcategory.name}</span>
-                    <span className="text-xs text-gray-400">({subcategory.count})</span>
+                    <span className="text-xs text-gray-400">({subcategory.count || 0})</span>
                   </button>
                 ))}
               </div>

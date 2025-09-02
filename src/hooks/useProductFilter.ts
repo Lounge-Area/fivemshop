@@ -12,12 +12,12 @@ export const useProductFilter = (products: Product[]) => {
 
     // Filter by category
     if (selectedCategory) {
-      filtered = filtered.filter(product => product.category === selectedCategory);
+      filtered = filtered.filter(product => product.category_id === selectedCategory);
     }
 
     // Filter by subcategory
     if (selectedSubcategory) {
-      filtered = filtered.filter(product => product.subcategory === selectedSubcategory);
+      filtered = filtered.filter(product => product.subcategory_id === selectedSubcategory);
     }
 
     // Filter by search term
@@ -37,9 +37,6 @@ export const useProductFilter = (products: Product[]) => {
         break;
       case 'price-high':
         filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'rating':
-        filtered.sort((a, b) => b.rating - a.rating);
         break;
       case 'name':
       default:

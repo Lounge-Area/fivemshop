@@ -5,12 +5,15 @@ import { FilterBar } from './components/FilterBar';
 import { ProductGrid } from './components/ProductGrid';
 import { Cart } from './components/Cart';
 import { useCart } from './hooks/useCart';
+import { useProducts } from './hooks/useProducts';
 import { useProductFilter } from './hooks/useProductFilter';
-import { categories, products } from './data/products';
 import { sendNUIMessage } from './utils/nui';
 
 function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  
+  // Load products and categories from Supabase
+  const { products, categories, loading, error } = useProducts();
   
   const {
     cartItems,
@@ -40,8 +43,8 @@ function App() {
       action: 'nuiReady',
       data: {
         timestamp: Date.now(),
-        productCount: products.length,
-        categoryCount: categories.length
+        productCount: products?.length || 0,
+        categoryCount: categories?.length || 0
       }
     }).catch(console.error);
 
@@ -66,7 +69,7 @@ function App() {
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, []);
+  }, [products, categories]);
 
   const handleCategorySelect = (categoryId: string | null) => {
     setSelectedCategory(categoryId);
@@ -76,6 +79,36 @@ function App() {
   const handleCartToggle = () => {
     setIsCartOpen(!isCartOpen);
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading FiveM Store...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Connection Error</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-sm text-gray-500">Please make sure Supabase is properly configured.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
