@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search, ShoppingCart, Store } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface HeaderProps {
   cartCount: number;
@@ -9,6 +10,13 @@ interface HeaderProps {
 }
 
 export function Header({ cartCount, searchTerm, onSearchChange, onCartClick }: HeaderProps) {
+  const { isAuthenticated } = useAuth();
+
+  const handleAdminClick = () => {
+    window.history.pushState({}, '', '/admin');
+    window.location.reload();
+  };
+
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -36,17 +44,27 @@ export function Header({ cartCount, searchTerm, onSearchChange, onCartClick }: H
           </div>
 
           {/* Cart Button */}
-          <button
-            onClick={onCartClick}
-            className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            <ShoppingCart className="h-6 w-6" />
-            {cartCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                {cartCount}
-              </span>
+          <div className="flex items-center space-x-4">
+            {isAuthenticated && (
+              <button
+                onClick={handleAdminClick}
+                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+              >
+                Admin
+              </button>
             )}
-          </button>
+            <button
+              onClick={onCartClick}
+              className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              <ShoppingCart className="h-6 w-6" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </header>
