@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wrench, Apple, Smartphone, Grid3x3, Zap, Target, Settings, Bomb, Car, Shirt, Heart, Tool, Flask, Home, FileText } from 'lucide-react';
+import { Wrench, Apple, Smartphone, Grid3x3, Zap, Target, Settings, Bomb, Car, Shirt, Heart, PenTool as Tool, FlaskRound as Flask, Home, FileText } from 'lucide-react';
 import { CategoryWithSubcategories } from '../types/product';
 
 interface CategoryFilterProps {
